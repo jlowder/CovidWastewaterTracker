@@ -8,7 +8,7 @@ To use the dashboard, simply open the `dashboard.html` file in a modern web brow
 
 Click here to try it out:
 
-[CovidWastewaterTracker](https://jlowder.github.io/CovidWastewaterTracker/dashboard.html>)
+[CovidWastewaterTracker](https://jlowder.github.io/CovidWastewaterTracker/dashboard.html)
 
 **Note on Data Fetching:** This application fetches live data directly from the CDC's public API. Due to web browser security policies (CORS), direct API requests from a local file may be blocked. The application includes a fallback mechanism using public CORS proxies to mitigate this. If you still encounter issues, running the file from a local web server or using a browser extension to disable CORS for the session are alternative solutions.
 
