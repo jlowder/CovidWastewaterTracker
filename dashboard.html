@@ -28,75 +28,124 @@
         .activity-very-low { background: #e6f3ff; }
         .loading { text-align: center; padding: 20px; color: #666; }
         .error { color: #d32f2f; background: #ffebee; padding: 10px; border-radius: 4px; margin: 10px 0; }
+
+        .dashboard-layout {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+        .sidebar {
+            flex: 0 0 250px;
+            position: sticky;
+            top: 20px;
+        }
+        .sidebar .controls div {
+            display: flex;
+            flex-direction: column;
+            height: 400px; /* Match chart-container height */
+        }
+        .sidebar #stateSelect {
+            height: 100%;
+            margin-top: 5px;
+        }
+        .main-content {
+            flex-grow: 1;
+        }
+        #region-definitions {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        #region-definitions h3 {
+            margin-top: 0;
+        }
+        #region-definitions ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        #region-definitions li {
+            margin-bottom: 5px;
+            font-family: monospace;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🦠 CDC Wastewater Surveillance Dashboard</h1>
         
-        <div class="controls">
-            <div>
-                <select id="stateSelect" multiple>
-                    <option value="">Select Location(s)...</option>
-                </select>
-                <br>
-                <em><small>(Hold Ctrl/Cmd to select up to 3)</small></em>
+        <div class="dashboard-layout">
+            <div class="sidebar">
+                <div class="controls">
+                    <div>
+                        <label for="stateSelect">Location(s)</label>
+                        <select id="stateSelect" multiple>
+                            <option value="">Select Location(s)...</option>
+                        </select>
+                        <em><small>(Hold Ctrl/Cmd to select up to 3)</small></em>
+                    </div>
+                </div>
             </div>
-            <select id="periodSelect">
-                <option value="all">All Results</option>
-                <option value="365">1 Year</option>
-                <option value="180">6 Months</option>
-                <option value="45">45 Days</option>
-            </select>
-            <button onclick="refreshData()">🔄 Refresh Data</button>
-        </div>
+            <div class="main-content">
+                <div class="controls">
+                    <select id="periodSelect">
+                        <option value="all">All Results</option>
+                        <option value="365">1 Year</option>
+                        <option value="180">6 Months</option>
+                        <option value="45">45 Days</option>
+                    </select>
+                    <button onclick="refreshData()">🔄 Refresh Data</button>
+                </div>
 
-        <div id="loading" class="loading" style="display: none;">Loading data...</div>
-        <div id="error" class="error" style="display: none;"></div>
+                <div id="loading" class="loading" style="display: none;">Loading data...</div>
+                <div id="error" class="error" style="display: none;"></div>
 
-        <div class="stats" id="stats" style="display: none;">
-            <div class="stat-card">
-                <div class="stat-value" id="currentWVAL">-</div>
-                <div>Current WVAL</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="avgWVAL">-</div>
-                <div>Average WVAL</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="peakWVAL">-</div>
-                <div>Peak WVAL</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="totalRecords">-</div>
-                <div>Total Records</div>
+                <div class="stats" id="stats" style="display: none;">
+                    <div class="stat-card">
+                        <div class="stat-value" id="currentWVAL">-</div>
+                        <div>Current WVAL</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="avgWVAL">-</div>
+                        <div>Average WVAL</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="peakWVAL">-</div>
+                        <div>Peak WVAL</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalRecords">-</div>
+                        <div>Total Records</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="timeSeriesChart"></canvas>
+                </div>
+
+                <div class="pie-container">
+                    <canvas id="pieChart"></canvas>
+                </div>
+
+                <div class="data-table">
+                    <h3>Raw Data <button onclick="toggleTable()" id="toggleBtn">Show</button></h3>
+                    <div id="tableContainer" style="display: none; max-height: 400px; overflow-y: auto;">
+                        <table id="dataTable">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>State</th>
+                                    <th>WVAL</th>
+                                    <th>Activity Level</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
-
-        <div class="chart-container">
-            <canvas id="timeSeriesChart"></canvas>
-        </div>
-
-        <div class="pie-container">
-            <canvas id="pieChart"></canvas>
-        </div>
-
-        <div class="data-table">
-            <h3>Raw Data <button onclick="toggleTable()" id="toggleBtn">Show</button></h3>
-            <div id="tableContainer" style="display: none; max-height: 400px; overflow-y: auto;">
-                <table id="dataTable">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>State</th>
-                            <th>WVAL</th>
-                            <th>Activity Level</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody"></tbody>
-                </table>
-            </div>
-        </div>
+        <div id="region-definitions"></div>
     </div>
 
     <script>
@@ -480,7 +529,21 @@
         document.getElementById('stateSelect').addEventListener('change', updateVisualization);
         document.getElementById('periodSelect').addEventListener('change', updateVisualization);
 
+        function populateRegionDefinitions() {
+            const container = document.getElementById('region-definitions');
+            if (!container) return;
+
+            let content = '<h3>Region Definitions</h3><ul>';
+            for (const region in REGIONS) {
+                content += `<li><strong>${region}:</strong> ${REGIONS[region].join(', ')}</li>`;
+            }
+            content += '</ul>';
+
+            container.innerHTML = content;
+        }
+
         // Initialize
+        populateRegionDefinitions();
         fetchData();
     </script>
 </body>
