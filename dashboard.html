@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDC Wastewater Surveillance Dashboard</title>
+    <link rel="icon" href="data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%20standalone%3D%22no%22%3F%3E%0A%3C%21--%20Created%20with%20Inkscape%20%28http%3A//www.inkscape.org/%29%20--%3E%0A%0A%3Csvg%0A%20%20%20version%3D%221.1%22%0A%20%20%20id%3D%22svg2%22%0A%20%20%20width%3D%221365.3333%22%0A%20%20%20height%3D%221365.3333%22%0A%20%20%20viewBox%3D%220%200%201365.3333%201365.3333%22%0A%20%20%20sodipodi%3Adocname%3D%22Medical_water_droplet_favicon.png%22%0A%20%20%20inkscape%3Aexport-filename%3D%22Medical_water_droplet_favicon.svg%22%0A%20%20%20inkscape%3Aexport-xdpi%3D%2296%22%0A%20%20%20inkscape%3Aexport-ydpi%3D%2296%22%0A%20%20%20xmlns%3Ainkscape%3D%22http%3A//www.inkscape.org/namespaces/inkscape%22%0A%20%20%20xmlns%3Asodipodi%3D%22http%3A//sodipodi.sourceforge.net/DTD/sodipodi-0.dtd%22%0A%20%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20%20xmlns%3Asvg%3D%22http%3A//www.w3.org/2000/svg%22%3E%0A%20%20%3Cdefs%0A%20%20%20%20%20id%3D%22defs6%22%20/%3E%0A%20%20%3Csodipodi%3Anamedview%0A%20%20%20%20%20id%3D%22namedview4%22%0A%20%20%20%20%20pagecolor%3D%22%23ffffff%22%0A%20%20%20%20%20bordercolor%3D%22%23000000%22%0A%20%20%20%20%20borderopacity%3D%220.25%22%0A%20%20%20%20%20inkscape%3Ashowpageshadow%3D%222%22%0A%20%20%20%20%20inkscape%3Apageopacity%3D%220.0%22%0A%20%20%20%20%20inkscape%3Apagecheckerboard%3D%220%22%0A%20%20%20%20%20inkscape%3Adeskcolor%3D%22%23d1d1d1%22%0A%20%20%20%20%20showgrid%3D%22false%22%20/%3E%0A%20%20%3Cg%0A%20%20%20%20%20inkscape%3Agroupmode%3D%22layer%22%0A%20%20%20%20%20inkscape%3Alabel%3D%22Image%22%0A%20%20%20%20%20id%3D%22g8%22%3E%0A%20%20%20%20%3Cpath%0A%20%20%20%20%20%20%20style%3D%22fill%3A%23000000%3Bstroke-width%3A1.33333%22%0A%20%20%20%20%20%20%20d%3D%22M%20666.21647%2C1203.5059%20C%20520.3101%2C1187.6683%20394.36131%2C1061.3956%20384.10946%2C914.11083%20371.26153%2C797.14395%20429.35574%2C689.53606%20484.3142%2C590.82648%20562.85428%2C452.46666%20641.89988%2C313.34502%20697.71217%2C163.90175%20752.35893%2C308.08731%20829.92971%2C442.06573%20908.47142%2C574.3346%20957.69026%2C661.02713%201016.217%2C748.97222%201026.3289%2C850.0504%20988.16324%2C772.51894%20898.2818%2C719.80719%20811.62938%2C738.87467%20709.19811%2C756.16494%20636.46704%2C867.69477%20663.21972%2C968.33463%20c%2019.96826%2C89.95387%20112.4777%2C155.85957%20204.11338%2C144.12067%2040.27858%2C-2.8504%2079.44884%2C-24.1856%20109.22777%2C-47.4666%20-63.27111%2C103.4074%20-192.54252%2C153.353%20-310.3444%2C138.5172%20z%20m%203.5452%2C-59.7399%20C%20583.91127%2C1115.0344%20504.3516%2C1055.2443%20472.49185%2C967.89774%20455.85401%2C926.78069%20450.12809%2C882.34531%20449.15529%2C838.27443%20420.13418%2C938.4749%20462.38502%2C1055.807%20554.09261%2C1108.356%20c%2034.90728%2C20.8212%2075.14903%2C33.6845%20115.66906%2C35.41%20z%20m%20172.7117%2C-80.0337%20c%20-32.36866%2C-18.664%2028.58156%2C-68.60423%20-27.17552%2C-71.48033%20-39.90192%2C-40.62242%20-34.82995%2C56.31993%20-73.9657%2C25.78073%20-31.55569%2C-40.08084%2063.69008%2C-31.01861%2029.83874%2C-71.48931%20-3.79108%2C-53.9526%20-68.60349%2C19.46702%20-71.66562%2C-33.25067%208.1231%2C-47.54616%2066.7494%2C25.51192%2071.2416%2C-26.93133%2037.06025%2C-42.1015%20-71.45826%2C-36.63528%20-25.02367%2C-76.86148%2035.36856%2C-14.17127%2030.19459%2C67.55115%2069.08495%2C29.0318%2043.21167%2C-1.42791%2018.77889%2C-38.49428%2017.68312%2C-60.56304%2017.39754%2C-31.62678%2057.84267%2C10.87079%2027.26364%2C28.88364%20-10.06266%2C34.502%2071.31891%2C60.65283%2067.53321%2C12.87705%2028.34507%2C-41.43708%2061.42865%2C36.92716%2010.43939%2C29.0854%20-34.87648%2C15.87284%206.24432%2C84.52135%2034.76815%2C47.57101%2052.41274%2C-12.70678%2020.57128%2C70.32298%20-11.83873%2C28.5386%20-39.2719%2C-10.46462%20-54.13335%2C68.95903%20-4.5465%2C60.69377%2036.71899%2C28.77846%20-36.50418%2C59.85666%20-31.96851%2C10.88961%20-20.37302%2C-32.94565%20-94.45669%2C11.66855%20-53.42169%2C43.29625%204.4431%2C15.8859%20-13.18876%2C31.2382%20-28.24686%2C23.9283%20z%20m%20-2.6044%2C-90.11261%20c%20-4.07029%2C-18.13036%20-16.22803%2C11.72542%200%2C0%20z%20m%2043.3372%2C-6.48145%20c%2028.05781%2C-37.94077%20-52.84776%2C-26.37712%20-13.3334%2C2.91405%20l%206.45299%2C0.005%20z%20m%20-74.7635%2C-31.7103%20c%206.16236%2C-50.12194%20-44.99076%2C13.60249%200%2C0%20z%20m%2091.5635%2C-34.35352%20c%2022.01697%2C-38.30765%20-50.92115%2C-19.14626%20-14.19454%2C3.68552%204.86565%2C1.88404%2010.97293%2C0.65093%2014.19454%2C-3.68552%20z%20m%20-74.8874%2C-4.76676%20c%2034.12684%2C-35.75619%20-51.87248%2C-28.86783%20-8.6935%2C1.12124%20l%204.08276%2C0.10443%20z%20m%2048.9824%2C-32.90655%20c%207.13104%2C-32.9179%20-30.92042%2C6.13385%200%2C0%20z%22%0A%20%20%20%20%20%20%20id%3D%22path170%22%20/%3E%0A%20%20%3C/g%3E%0A%3C/svg%3E%0A">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 95%; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .controls { display: flex; gap: 15px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
+        select, button { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background: #007cba; color: white; cursor: pointer; }
+        button:hover { background: #005a87; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
+        .stat-card { background: #f8f9fa; padding: 15px; border-radius: 6px; text-align: center; }
+        .stat-value { font-size: 24px; font-weight: bold; color: #007cba; }
+        .chart-container { position: relative; height: 400px; margin: 20px 0; }
+        .pie-container { position: relative; height: 300px; width: 300px; margin: 20px auto; }
+        .data-table { margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #f8f9fa; }
+        .activity-very-high { background: #1f77b4; color: white; }
+        .activity-high { background: #4a90e2; color: white; }
+        .activity-moderate { background: #7bb3f0; }
+        .activity-low { background: #b3d9ff; }
+        .activity-very-low { background: #e6f3ff; }
+        .loading { text-align: center; padding: 20px; color: #666; }
+        .error { color: #d32f2f; background: #ffebee; padding: 10px; border-radius: 4px; margin: 10px 0; }
+
+        .dashboard-layout {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+        .sidebar {
+            flex: 0 0 250px;
+            position: sticky;
+            top: 20px;
+        }
+        .sidebar .controls div {
+            display: flex;
+            flex-direction: column;
+            height: 400px; /* Match chart-container height */
+        }
+        .sidebar #stateSelect {
+            height: 100%;
+            margin-top: 5px;
+        }
+        .main-content {
+            flex-grow: 1;
+        }
+        #region-definitions {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        #region-definitions h3 {
+            margin-top: 0;
+        }
+        #region-definitions ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        #region-definitions li {
+            margin-bottom: 5px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🦠 CDC Wastewater Surveillance Dashboard</h1>
+        
+        <div class="dashboard-layout">
+            <div class="sidebar">
+                <div class="controls">
+                    <div>
+                        <label for="stateSelect">Location(s)</label>
+                        <select id="stateSelect" multiple>
+                            <option value="">Select Location(s)...</option>
+                        </select>
+                        <em><small>(Hold Ctrl/Cmd to select up to 3)</small></em>
+                    </div>
+                </div>
+            </div>
+            <div class="main-content">
+                <div class="controls">
+                    <select id="periodSelect">
+                        <option value="all">All Results</option>
+                        <option value="365">1 Year</option>
+                        <option value="180">6 Months</option>
+                        <option value="45">45 Days</option>
+                    </select>
+                    <button onclick="refreshData()">🔄 Refresh Data</button>
+                </div>
+
+                <div id="loading" class="loading" style="display: none;">Loading data...</div>
+                <div id="error" class="error" style="display: none;"></div>
+
+                <div class="stats" id="stats" style="display: none;">
+                    <div class="stat-card">
+                        <div class="stat-value" id="currentWVAL">-</div>
+                        <div>Current WVAL</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="avgWVAL">-</div>
+                        <div>Average WVAL</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="peakWVAL">-</div>
+                        <div>Peak WVAL</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalRecords">-</div>
+                        <div>Total Records</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="timeSeriesChart"></canvas>
+                </div>
+
+                <div class="pie-container">
+                    <canvas id="pieChart"></canvas>
+                </div>
+
+                <div class="data-table">
+                    <h3>Raw Data <button onclick="toggleTable()" id="toggleBtn">Show</button></h3>
+                    <div id="tableContainer" style="display: none; max-height: 400px; overflow-y: auto;">
+                        <table id="dataTable">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>State</th>
+                                    <th>WVAL</th>
+                                    <th>Activity Level</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="region-definitions"></div>
+    </div>
+
+    <script>
+        let allData = [];
+        let timeSeriesChart = null;
+        let pieChart = null;
+
+        const CDC_URL = 'https://www.cdc.gov/wcms/vizdata/NCEZID_DIDRI/SC2/nwsssc2stateactivitylevelDL.csv';
+        const PROXIES = [
+            '', // Try direct first
+            'https://api.allorigins.win/raw?url=',
+            'https://corsproxy.io/?'
+        ];
+
+        const ACTIVITY_COLORS = {
+            'Very High': '#1f77b4',
+            'High': '#4a90e2', 
+            'Moderate': '#7bb3f0',
+            'Low': '#b3d9ff',
+            'Very Low': '#e6f3ff'
+        };
+
+        const COMPARISON_COLORS = ['#1f77b4', '#ff7f0e', '#2ca02c'];
+
+        const REGIONS = {
+            "Northeast": ["Connecticut", "Maine", "Massachusetts", "New Hampshire", "Rhode Island", "Vermont", "New Jersey", "New York", "Pennsylvania"],
+            "Midwest": ["Illinois", "Indiana", "Michigan", "Ohio", "Wisconsin", "Iowa", "Kansas", "Minnesota", "Missouri", "Nebraska", "North Dakota", "South Dakota"],
+            "South": ["Delaware", "District of Columbia", "Florida", "Georgia", "Maryland", "North Carolina", "South Carolina", "Virginia", "West Virginia", "Alabama", "Kentucky", "Mississippi", "Tennessee", "Arkansas", "Louisiana", "Oklahoma", "Texas"],
+            "West": ["Arizona", "Colorado", "Idaho", "Montana", "Nevada", "New Mexico", "Utah", "Wyoming", "Alaska", "California", "Hawaii", "Oregon", "Washington"]
+        };
+
+        function getActivityLevel(wval) {
+            if (wval > 8) return 'Very High';
+            if (wval >= 5) return 'High';
+            if (wval >= 3) return 'Moderate';
+            if (wval >= 1) return 'Low';
+            return 'Very Low';
+        }
+
+        function parseCSV(text) {
+            console.log('Raw CSV data:', text.substring(0, 500)); // Debug first 500 chars
+            const lines = text.trim().split('\n');
+            const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+            console.log('Headers:', headers);
+            
+            const data = lines.slice(1).map(line => {
+                const values = line.split(',').map(v => v.replace(/"/g, '').trim());
+                const obj = {};
+                headers.forEach((header, i) => obj[header] = values[i] || '');
+                return obj;
+            }).filter(row => row[headers[0]]); // Filter out empty rows
+            
+            console.log('Parsed data sample:', data.slice(0, 3));
+            return data;
+        }
+
+        async function fetchData() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+            
+            for (let i = 0; i < PROXIES.length; i++) {
+                try {
+                    const url = PROXIES[i] + (PROXIES[i] ? encodeURIComponent(CDC_URL) : CDC_URL);
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
+                    
+                    const text = await response.text();
+                    allData = parseCSV(text);
+                    
+                    populateStates();
+                    updateVisualization();
+                    document.getElementById('loading').style.display = 'none';
+                    return;
+                    
+                } catch (error) {
+                    console.log(`Proxy ${i} failed:`, error.message);
+                    if (i === PROXIES.length - 1) {
+                        document.getElementById('error').textContent = 'Unable to fetch data. CORS blocked. Please run a local server or use browser extension to disable CORS.';
+                        document.getElementById('error').style.display = 'block';
+                    }
+                }
+            }
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function populateStates() {
+            console.log('All data length:', allData.length);
+            if (allData.length === 0) return;
+
+            const stateCol = Object.keys(allData[0]).find(key => 
+                key.toLowerCase().includes('state') || 
+                key.toLowerCase().includes('abbr') ||
+                key === 'state_abbr'
+            );
+            if (!stateCol) {
+                console.error('No state column found.');
+                return;
+            }
+
+            const states = [...new Set(allData.map(d => d[stateCol]).filter(s => s))].sort();
+            const select = document.getElementById('stateSelect');
+
+            let options = '<option value="">Select Location...</option>';
+            options += '<option value="National">National</option>';
+            options += Object.keys(REGIONS).map(r => `<option value="${r}">${r} Region</option>`).join('');
+            options += '<option disabled>─────────────────</option>';
+            options += states.map(state => `<option value="${state}">${state}</option>`).join('');
+
+            select.innerHTML = options;
+
+            const savedStatesJSON = localStorage.getItem('selectedStates');
+            if (savedStatesJSON) {
+                try {
+                    const savedStates = JSON.parse(savedStatesJSON);
+                    if (Array.isArray(savedStates)) {
+                        Array.from(select.options).forEach(option => {
+                            if (savedStates.includes(option.value)) {
+                                option.selected = true;
+                            }
+                        });
+                    }
+                } catch (e) {
+                    console.error("Could not parse saved states from localStorage", e);
+                    localStorage.removeItem('selectedStates');
+                }
+            }
+        }
+
+        function filterData(selectedLocation) {
+            const period = document.getElementById('periodSelect').value;
+            
+            if (!selectedLocation || allData.length === 0) return [];
+
+            const cols = Object.keys(allData[0]);
+            const stateCol = cols.find(key => key.toLowerCase().includes('state') || key.toLowerCase().includes('abbr'));
+            const dateCol = cols.find(key => key.toLowerCase().includes('date'));
+            const wvalCol = cols.find(key => key.toLowerCase().includes('wval'));
+
+            if (!stateCol || !dateCol || !wvalCol) {
+                console.error("Required columns (state, date, wval) not found.");
+                return [];
+            }
+
+            let sourceData = allData;
+            const isState = !REGIONS[selectedLocation] && selectedLocation !== 'National';
+            
+            if (isState) {
+                sourceData = allData.filter(d => d[stateCol] === selectedLocation);
+            } else if (REGIONS[selectedLocation]) {
+                const regionStates = REGIONS[selectedLocation];
+                sourceData = allData.filter(d => regionStates.includes(d[stateCol]));
+            }
+            // For "National", sourceData remains allData
+
+            // Apply time period filter
+            if (period !== 'all') {
+                const cutoffDate = new Date();
+                cutoffDate.setDate(cutoffDate.getDate() - parseInt(period));
+                sourceData = sourceData.filter(d => {
+                    const rowDate = new Date(d[dateCol]);
+                    return !isNaN(rowDate) && rowDate >= cutoffDate;
+                });
+            }
+
+            // Process and format data
+            if (isState) {
+                return sourceData.map(d => ({
+                    wval: parseFloat(d[wvalCol]) || 0,
+                    date: new Date(d[dateCol]),
+                    state_abbr: d[stateCol],
+                    activityLevel: getActivityLevel(parseFloat(d[wvalCol]) || 0)
+                })).sort((a, b) => a.date - b.date);
+            } else {
+                // Aggregate for National or Regional view
+                const aggregated = {};
+                sourceData.forEach(d => {
+                    const dateStr = new Date(d[dateCol]).toISOString().split('T')[0];
+                    const wval = parseFloat(d[wvalCol]);
+                    if (isNaN(wval)) return;
+
+                    if (!aggregated[dateStr]) {
+                        aggregated[dateStr] = { sum: 0, count: 0, date: new Date(d[dateCol]) };
+                    }
+                    aggregated[dateStr].sum += wval;
+                    aggregated[dateStr].count++;
+                });
+
+                return Object.values(aggregated).map(agg => {
+                    const avgWval = agg.sum / agg.count;
+                    return {
+                        date: agg.date,
+                        wval: avgWval,
+                        name: selectedLocation, // "National" or Region name
+                        activityLevel: getActivityLevel(avgWval)
+                    };
+                }).sort((a, b) => a.date - b.date);
+            }
+        }
+
+        function updateStats(data) {
+            if (data.length === 0) {
+                document.getElementById('stats').style.display = 'none';
+                return;
+            }
+            
+            const wvals = data.map(d => d.wval);
+            const current = wvals[wvals.length - 1] || 0;
+            const avg = wvals.reduce((a, b) => a + b, 0) / wvals.length;
+            const peak = Math.max(...wvals);
+            
+            document.getElementById('currentWVAL').textContent = current.toFixed(2);
+            document.getElementById('avgWVAL').textContent = avg.toFixed(2);
+            document.getElementById('peakWVAL').textContent = peak.toFixed(2);
+            document.getElementById('totalRecords').textContent = data.length;
+            document.getElementById('stats').style.display = 'grid';
+        }
+
+        function updateTimeSeriesChart(datasets) {
+            const ctx = document.getElementById('timeSeriesChart').getContext('2d');
+            
+            if (timeSeriesChart) timeSeriesChart.destroy();
+
+            // Unify date labels across all datasets for proper alignment
+            const allDates = [...new Set(datasets.flatMap(ds => ds.data.map(d => d.date.getTime())))];
+            allDates.sort((a, b) => a - b);
+            const labels = allDates.map(ts => new Date(ts).toLocaleDateString());
+
+            const chartDatasets = datasets.map((ds, i) => {
+                const dataMap = new Map(ds.data.map(d => [d.date.toLocaleDateString(), d.wval]));
+                return {
+                    label: ds.label,
+                    data: labels.map(label => dataMap.get(label) ?? null), // Use null for missing data points
+                    borderColor: COMPARISON_COLORS[i % COMPARISON_COLORS.length],
+                    backgroundColor: COMPARISON_COLORS[i % COMPARISON_COLORS.length] + '1a', // Add alpha for area fill
+                    tension: 0.1,
+                    spanGaps: true, // Connect lines over null data points
+                };
+            });
+
+            timeSeriesChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: chartDatasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'WVAL' } },
+                        x: { title: { display: true, text: 'Date' } }
+                    },
+                    plugins: {
+                        legend: {
+                            display: datasets.length > 1 // Only show legend in comparison mode
+                        }
+                    }
+                }
+            });
+        }
+
+        function updatePieChart(data) {
+            const ctx = document.getElementById('pieChart').getContext('2d');
+            
+            if (pieChart) pieChart.destroy();
+            
+            const activityCounts = {};
+            data.forEach(d => {
+                activityCounts[d.activityLevel] = (activityCounts[d.activityLevel] || 0) + 1;
+            });
+            
+            const labels = Object.keys(activityCounts);
+            const values = Object.values(activityCounts);
+            const colors = labels.map(label => ACTIVITY_COLORS[label]);
+            
+            pieChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: colors
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: 'Activity Level Distribution' }
+                    }
+                }
+            });
+        }
+
+        function updateTable(data, locationName) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            data.forEach(d => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${d.date.toLocaleDateString()}</td>
+                    <td>${locationName}</td>
+                    <td>${d.wval.toFixed(2)}</td>
+                    <td class="activity-${d.activityLevel.toLowerCase().replace(' ', '-')}">${d.activityLevel}</td>
+                `;
+            });
+        }
+
+        function updateVisualization() {
+            const select = document.getElementById('stateSelect');
+            let selectedLocations = Array.from(select.options)
+                .filter(option => option.selected && option.value)
+                .map(option => option.value);
+
+            if (selectedLocations.length > 3) {
+                console.warn("You can select a maximum of 3 locations. Displaying the first 3.");
+                selectedLocations = selectedLocations.slice(0, 3);
+                // Visually update the selection to match the data being shown
+                Array.from(select.options).forEach(opt => {
+                    opt.selected = selectedLocations.includes(opt.value);
+                });
+            }
+
+            localStorage.setItem('selectedStates', JSON.stringify(selectedLocations));
+
+            const statsEl = document.getElementById('stats');
+            const pieEl = document.querySelector('.pie-container');
+            const tableEl = document.querySelector('.data-table');
+
+            if (selectedLocations.length === 0) {
+                if (timeSeriesChart) timeSeriesChart.destroy();
+                statsEl.style.display = 'none';
+                pieEl.style.display = 'none';
+                tableEl.style.display = 'none';
+                return;
+            }
+
+            const datasets = selectedLocations.map(location => ({
+                label: location,
+                data: filterData(location)
+            }));
+
+            if (selectedLocations.length > 1) {
+                // Comparison View
+                statsEl.style.display = 'none';
+                pieEl.style.display = 'none';
+                tableEl.style.display = 'none';
+                updateTimeSeriesChart(datasets);
+            } else {
+                // Single Location View
+                statsEl.style.display = 'grid';
+                pieEl.style.display = 'block';
+                // Make sure the entire table container is visible
+                tableEl.style.display = 'block';
+
+                const singleDataset = datasets[0].data;
+                updateStats(singleDataset);
+                updateTimeSeriesChart(datasets);
+                updatePieChart(singleDataset);
+                updateTable(singleDataset, selectedLocations[0]);
+            }
+        }
+
+        function toggleTable() {
+            const container = document.getElementById('tableContainer');
+            const btn = document.getElementById('toggleBtn');
+            if (container.style.display === 'none') {
+                container.style.display = 'block';
+                btn.textContent = 'Hide';
+            } else {
+                container.style.display = 'none';
+                btn.textContent = 'Show';
+            }
+        }
+
+        function refreshData() {
+            fetchData();
+        }
+
+        document.getElementById('stateSelect').addEventListener('change', updateVisualization);
+        document.getElementById('periodSelect').addEventListener('change', updateVisualization);
+
+        function populateRegionDefinitions() {
+            const container = document.getElementById('region-definitions');
+            if (!container) return;
+
+            let content = '<h3>Region Definitions</h3><ul>';
+            for (const region in REGIONS) {
+                content += `<li><strong>${region}:</strong> ${REGIONS[region].join(', ')}</li>`;
+            }
+            content += '</ul>';
+
+            container.innerHTML = content;
+        }
+
+        // Initialize
+        populateRegionDefinitions();
+        fetchData();
+    </script>
+</body>
+</html>
