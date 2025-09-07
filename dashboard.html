@@ -115,6 +115,13 @@
             'Very Low': '#e6f3ff'
         };
 
+        const REGIONS = {
+            "Northeast": ["Connecticut", "Maine", "Massachusetts", "New Hampshire", "Rhode Island", "Vermont", "New Jersey", "New York", "Pennsylvania"],
+            "Midwest": ["Illinois", "Indiana", "Michigan", "Ohio", "Wisconsin", "Iowa", "Kansas", "Minnesota", "Missouri", "Nebraska", "North Dakota", "South Dakota"],
+            "South": ["Delaware", "District of Columbia", "Florida", "Georgia", "Maryland", "North Carolina", "South Carolina", "Virginia", "West Virginia", "Alabama", "Kentucky", "Mississippi", "Tennessee", "Arkansas", "Louisiana", "Oklahoma", "Texas"],
+            "West": ["Arizona", "Colorado", "Idaho", "Montana", "Nevada", "New Mexico", "Utah", "Wyoming", "Alaska", "California", "Hawaii", "Oregon", "Washington"]
+        };
+
         function getActivityLevel(wval) {
             if (wval > 8) return 'Very High';
             if (wval >= 5) return 'High';
@@ -172,72 +179,107 @@
         function populateStates() {
             console.log('All data length:', allData.length);
             if (allData.length === 0) return;
-            
-            // Find the state column (could be different names)
+
             const stateCol = Object.keys(allData[0]).find(key => 
                 key.toLowerCase().includes('state') || 
                 key.toLowerCase().includes('abbr') ||
                 key === 'state_abbr'
             );
-            console.log('State column found:', stateCol);
-            
             if (!stateCol) {
-                console.error('No state column found. Available columns:', Object.keys(allData[0]));
+                console.error('No state column found.');
                 return;
             }
-            
+
             const states = [...new Set(allData.map(d => d[stateCol]).filter(s => s))].sort();
-            console.log('States found:', states);
-            
             const select = document.getElementById('stateSelect');
-            select.innerHTML = '<option value="">Select State/Territory...</option>';
-            states.forEach(state => {
-                select.innerHTML += `<option value="${state}">${state}</option>`;
-            });
+
+            let options = '<option value="">Select Location...</option>';
+            options += '<option value="National">National</option>';
+            options += Object.keys(REGIONS).map(r => `<option value="${r}">${r} Region</option>`).join('');
+            options += '<option disabled>─────────────────</option>';
+            options += states.map(state => `<option value="${state}">${state}</option>`).join('');
+
+            select.innerHTML = options;
+
+            const savedState = localStorage.getItem('selectedState');
+            if (savedState) {
+                // Check if the saved value is a valid option
+                if (Array.from(select.options).some(opt => opt.value === savedState)) {
+                    select.value = savedState;
+                }
+            }
         }
 
         function filterData() {
-            const selectedState = document.getElementById('stateSelect').value;
+            const selectedLocation = document.getElementById('stateSelect').value;
             const period = document.getElementById('periodSelect').value;
             
-            if (!selectedState || allData.length === 0) return [];
-            
-            // Find column names dynamically
+            if (!selectedLocation || allData.length === 0) return [];
+
             const cols = Object.keys(allData[0]);
-            const stateCol = cols.find(key => 
-                key.toLowerCase().includes('state') || 
-                key.toLowerCase().includes('abbr')
-            );
-            const dateCol = cols.find(key => 
-                key.toLowerCase().includes('date') || 
-                key.toLowerCase().includes('time')
-            );
-            const wvalCol = cols.find(key => 
-                key.toLowerCase().includes('wval') || 
-                key.toLowerCase().includes('viral') ||
-                key.toLowerCase().includes('activity')
-            );
+            const stateCol = cols.find(key => key.toLowerCase().includes('state') || key.toLowerCase().includes('abbr'));
+            const dateCol = cols.find(key => key.toLowerCase().includes('date'));
+            const wvalCol = cols.find(key => key.toLowerCase().includes('wval'));
+
+            if (!stateCol || !dateCol || !wvalCol) {
+                console.error("Required columns (state, date, wval) not found.");
+                return [];
+            }
+
+            let sourceData = allData;
+            const isState = !REGIONS[selectedLocation] && selectedLocation !== 'National';
             
-            console.log('Using columns:', {stateCol, dateCol, wvalCol});
-            
-            let filtered = allData.filter(d => d[stateCol] === selectedState);
-            
-            if (period !== 'all' && dateCol) {
+            if (isState) {
+                sourceData = allData.filter(d => d[stateCol] === selectedLocation);
+            } else if (REGIONS[selectedLocation]) {
+                const regionStates = REGIONS[selectedLocation];
+                sourceData = allData.filter(d => regionStates.includes(d[stateCol]));
+            }
+            // For "National", sourceData remains allData
+
+            // Apply time period filter
+            if (period !== 'all') {
                 const cutoffDate = new Date();
                 cutoffDate.setDate(cutoffDate.getDate() - parseInt(period));
-                filtered = filtered.filter(d => {
+                sourceData = sourceData.filter(d => {
                     const rowDate = new Date(d[dateCol]);
                     return !isNaN(rowDate) && rowDate >= cutoffDate;
                 });
             }
-            
-            return filtered.map(d => ({
-                ...d,
-                wval: parseFloat(d[wvalCol]) || 0,
-                date: dateCol ? new Date(d[dateCol]) : new Date(),
-                state_abbr: d[stateCol],
-                activityLevel: getActivityLevel(parseFloat(d[wvalCol]) || 0)
-            })).sort((a, b) => a.date - b.date);
+
+            // Process and format data
+            if (isState) {
+                return sourceData.map(d => ({
+                    wval: parseFloat(d[wvalCol]) || 0,
+                    date: new Date(d[dateCol]),
+                    state_abbr: d[stateCol],
+                    activityLevel: getActivityLevel(parseFloat(d[wvalCol]) || 0)
+                })).sort((a, b) => a.date - b.date);
+            } else {
+                // Aggregate for National or Regional view
+                const aggregated = {};
+                sourceData.forEach(d => {
+                    const dateStr = new Date(d[dateCol]).toISOString().split('T')[0];
+                    const wval = parseFloat(d[wvalCol]);
+                    if (isNaN(wval)) return;
+
+                    if (!aggregated[dateStr]) {
+                        aggregated[dateStr] = { sum: 0, count: 0, date: new Date(d[dateCol]) };
+                    }
+                    aggregated[dateStr].sum += wval;
+                    aggregated[dateStr].count++;
+                });
+
+                return Object.values(aggregated).map(agg => {
+                    const avgWval = agg.sum / agg.count;
+                    return {
+                        date: agg.date,
+                        wval: avgWval,
+                        name: selectedLocation, // "National" or Region name
+                        activityLevel: getActivityLevel(avgWval)
+                    };
+                }).sort((a, b) => a.date - b.date);
+            }
         }
 
         function updateStats(data) {
@@ -321,13 +363,15 @@
 
         function updateTable(data) {
             const tbody = document.getElementById('tableBody');
+            const selectedLocation = document.getElementById('stateSelect').value;
             tbody.innerHTML = '';
             
             data.forEach(d => {
                 const row = tbody.insertRow();
+                const locationCell = d.state_abbr ? d.state_abbr : d.name;
                 row.innerHTML = `
                     <td>${d.date.toLocaleDateString()}</td>
-                    <td>${d.state_abbr}</td>
+                    <td>${locationCell}</td>
                     <td>${d.wval.toFixed(2)}</td>
                     <td class="activity-${d.activityLevel.toLowerCase().replace(' ', '-')}">${d.activityLevel}</td>
                 `;
@@ -335,6 +379,10 @@
         }
 
         function updateVisualization() {
+            const selectedLocation = document.getElementById('stateSelect').value;
+            if (selectedLocation) {
+                localStorage.setItem('selectedState', selectedLocation);
+            }
             const data = filterData();
             updateStats(data);
             updateTimeSeriesChart(data);
