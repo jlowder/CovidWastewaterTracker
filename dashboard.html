@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDC Wastewater Surveillance Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .controls { display: flex; gap: 15px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
+        select, button { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background: #007cba; color: white; cursor: pointer; }
+        button:hover { background: #005a87; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
+        .stat-card { background: #f8f9fa; padding: 15px; border-radius: 6px; text-align: center; }
+        .stat-value { font-size: 24px; font-weight: bold; color: #007cba; }
+        .chart-container { position: relative; height: 400px; margin: 20px 0; }
+        .pie-container { position: relative; height: 300px; width: 300px; margin: 20px auto; }
+        .data-table { margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #f8f9fa; }
+        .activity-very-high { background: #1f77b4; color: white; }
+        .activity-high { background: #4a90e2; color: white; }
+        .activity-moderate { background: #7bb3f0; }
+        .activity-low { background: #b3d9ff; }
+        .activity-very-low { background: #e6f3ff; }
+        .loading { text-align: center; padding: 20px; color: #666; }
+        .error { color: #d32f2f; background: #ffebee; padding: 10px; border-radius: 4px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🦠 CDC Wastewater Surveillance Dashboard</h1>
+        
+        <div class="controls">
+            <select id="stateSelect">
+                <option value="">Select State/Territory...</option>
+            </select>
+            <select id="periodSelect">
+                <option value="all">All Results</option>
+                <option value="365">1 Year</option>
+                <option value="180">6 Months</option>
+                <option value="45">45 Days</option>
+            </select>
+            <button onclick="refreshData()">🔄 Refresh Data</button>
+        </div>
+
+        <div id="loading" class="loading" style="display: none;">Loading data...</div>
+        <div id="error" class="error" style="display: none;"></div>
+
+        <div class="stats" id="stats" style="display: none;">
+            <div class="stat-card">
+                <div class="stat-value" id="currentWVAL">-</div>
+                <div>Current WVAL</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avgWVAL">-</div>
+                <div>Average WVAL</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="peakWVAL">-</div>
+                <div>Peak WVAL</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalRecords">-</div>
+                <div>Total Records</div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="timeSeriesChart"></canvas>
+        </div>
+
+        <div class="pie-container">
+            <canvas id="pieChart"></canvas>
+        </div>
+
+        <div class="data-table">
+            <h3>Raw Data <button onclick="toggleTable()" id="toggleBtn">Show</button></h3>
+            <div id="tableContainer" style="display: none; max-height: 400px; overflow-y: auto;">
+                <table id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>State</th>
+                            <th>WVAL</th>
+                            <th>Activity Level</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allData = [];
+        let timeSeriesChart = null;
+        let pieChart = null;
+
+        const CDC_URL = 'https://www.cdc.gov/wcms/vizdata/NCEZID_DIDRI/SC2/nwsssc2stateactivitylevelDL.csv';
+        const PROXIES = [
+            '', // Try direct first
+            'https://api.allorigins.win/raw?url=',
+            'https://corsproxy.io/?'
+        ];
+
+        const ACTIVITY_COLORS = {
+            'Very High': '#1f77b4',
+            'High': '#4a90e2', 
+            'Moderate': '#7bb3f0',
+            'Low': '#b3d9ff',
+            'Very Low': '#e6f3ff'
+        };
+
+        function getActivityLevel(wval) {
+            if (wval > 8) return 'Very High';
+            if (wval >= 5) return 'High';
+            if (wval >= 3) return 'Moderate';
+            if (wval >= 1) return 'Low';
+            return 'Very Low';
+        }
+
+        function parseCSV(text) {
+            console.log('Raw CSV data:', text.substring(0, 500)); // Debug first 500 chars
+            const lines = text.trim().split('\n');
+            const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+            console.log('Headers:', headers);
+            
+            const data = lines.slice(1).map(line => {
+                const values = line.split(',').map(v => v.replace(/"/g, '').trim());
+                const obj = {};
+                headers.forEach((header, i) => obj[header] = values[i] || '');
+                return obj;
+            }).filter(row => row[headers[0]]); // Filter out empty rows
+            
+            console.log('Parsed data sample:', data.slice(0, 3));
+            return data;
+        }
+
+        async function fetchData() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+            
+            for (let i = 0; i < PROXIES.length; i++) {
+                try {
+                    const url = PROXIES[i] + (PROXIES[i] ? encodeURIComponent(CDC_URL) : CDC_URL);
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
+                    
+                    const text = await response.text();
+                    allData = parseCSV(text);
+                    
+                    populateStates();
+                    updateVisualization();
+                    document.getElementById('loading').style.display = 'none';
+                    return;
+                    
+                } catch (error) {
+                    console.log(`Proxy ${i} failed:`, error.message);
+                    if (i === PROXIES.length - 1) {
+                        document.getElementById('error').textContent = 'Unable to fetch data. CORS blocked. Please run a local server or use browser extension to disable CORS.';
+                        document.getElementById('error').style.display = 'block';
+                    }
+                }
+            }
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function populateStates() {
+            console.log('All data length:', allData.length);
+            if (allData.length === 0) return;
+            
+            // Find the state column (could be different names)
+            const stateCol = Object.keys(allData[0]).find(key => 
+                key.toLowerCase().includes('state') || 
+                key.toLowerCase().includes('abbr') ||
+                key === 'state_abbr'
+            );
+            console.log('State column found:', stateCol);
+            
+            if (!stateCol) {
+                console.error('No state column found. Available columns:', Object.keys(allData[0]));
+                return;
+            }
+            
+            const states = [...new Set(allData.map(d => d[stateCol]).filter(s => s))].sort();
+            console.log('States found:', states);
+            
+            const select = document.getElementById('stateSelect');
+            select.innerHTML = '<option value="">Select State/Territory...</option>';
+            states.forEach(state => {
+                select.innerHTML += `<option value="${state}">${state}</option>`;
+            });
+        }
+
+        function filterData() {
+            const selectedState = document.getElementById('stateSelect').value;
+            const period = document.getElementById('periodSelect').value;
+            
+            if (!selectedState || allData.length === 0) return [];
+            
+            // Find column names dynamically
+            const cols = Object.keys(allData[0]);
+            const stateCol = cols.find(key => 
+                key.toLowerCase().includes('state') || 
+                key.toLowerCase().includes('abbr')
+            );
+            const dateCol = cols.find(key => 
+                key.toLowerCase().includes('date') || 
+                key.toLowerCase().includes('time')
+            );
+            const wvalCol = cols.find(key => 
+                key.toLowerCase().includes('wval') || 
+                key.toLowerCase().includes('viral') ||
+                key.toLowerCase().includes('activity')
+            );
+            
+            console.log('Using columns:', {stateCol, dateCol, wvalCol});
+            
+            let filtered = allData.filter(d => d[stateCol] === selectedState);
+            
+            if (period !== 'all' && dateCol) {
+                const cutoffDate = new Date();
+                cutoffDate.setDate(cutoffDate.getDate() - parseInt(period));
+                filtered = filtered.filter(d => {
+                    const rowDate = new Date(d[dateCol]);
+                    return !isNaN(rowDate) && rowDate >= cutoffDate;
+                });
+            }
+            
+            return filtered.map(d => ({
+                ...d,
+                wval: parseFloat(d[wvalCol]) || 0,
+                date: dateCol ? new Date(d[dateCol]) : new Date(),
+                state_abbr: d[stateCol],
+                activityLevel: getActivityLevel(parseFloat(d[wvalCol]) || 0)
+            })).sort((a, b) => a.date - b.date);
+        }
+
+        function updateStats(data) {
+            if (data.length === 0) {
+                document.getElementById('stats').style.display = 'none';
+                return;
+            }
+            
+            const wvals = data.map(d => d.wval);
+            const current = wvals[wvals.length - 1] || 0;
+            const avg = wvals.reduce((a, b) => a + b, 0) / wvals.length;
+            const peak = Math.max(...wvals);
+            
+            document.getElementById('currentWVAL').textContent = current.toFixed(2);
+            document.getElementById('avgWVAL').textContent = avg.toFixed(2);
+            document.getElementById('peakWVAL').textContent = peak.toFixed(2);
+            document.getElementById('totalRecords').textContent = data.length;
+            document.getElementById('stats').style.display = 'grid';
+        }
+
+        function updateTimeSeriesChart(data) {
+            const ctx = document.getElementById('timeSeriesChart').getContext('2d');
+            
+            if (timeSeriesChart) timeSeriesChart.destroy();
+            
+            timeSeriesChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(d => d.date.toLocaleDateString()),
+                    datasets: [{
+                        label: 'WVAL',
+                        data: data.map(d => d.wval),
+                        borderColor: '#007cba',
+                        backgroundColor: 'rgba(0, 124, 186, 0.1)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'WVAL' } },
+                        x: { title: { display: true, text: 'Date' } }
+                    }
+                }
+            });
+        }
+
+        function updatePieChart(data) {
+            const ctx = document.getElementById('pieChart').getContext('2d');
+            
+            if (pieChart) pieChart.destroy();
+            
+            const activityCounts = {};
+            data.forEach(d => {
+                activityCounts[d.activityLevel] = (activityCounts[d.activityLevel] || 0) + 1;
+            });
+            
+            const labels = Object.keys(activityCounts);
+            const values = Object.values(activityCounts);
+            const colors = labels.map(label => ACTIVITY_COLORS[label]);
+            
+            pieChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: colors
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: 'Activity Level Distribution' }
+                    }
+                }
+            });
+        }
+
+        function updateTable(data) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            data.forEach(d => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${d.date.toLocaleDateString()}</td>
+                    <td>${d.state_abbr}</td>
+                    <td>${d.wval.toFixed(2)}</td>
+                    <td class="activity-${d.activityLevel.toLowerCase().replace(' ', '-')}">${d.activityLevel}</td>
+                `;
+            });
+        }
+
+        function updateVisualization() {
+            const data = filterData();
+            updateStats(data);
+            updateTimeSeriesChart(data);
+            updatePieChart(data);
+            updateTable(data);
+        }
+
+        function toggleTable() {
+            const container = document.getElementById('tableContainer');
+            const btn = document.getElementById('toggleBtn');
+            if (container.style.display === 'none') {
+                container.style.display = 'block';
+                btn.textContent = 'Hide';
+            } else {
+                container.style.display = 'none';
+                btn.textContent = 'Show';
+            }
+        }
+
+        function refreshData() {
+            fetchData();
+        }
+
+        document.getElementById('stateSelect').addEventListener('change', updateVisualization);
+        document.getElementById('periodSelect').addEventListener('change', updateVisualization);
+
+        // Initialize
+        fetchData();
+    </script>
+</body>
+</html>
