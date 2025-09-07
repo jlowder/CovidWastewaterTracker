@@ -35,9 +35,13 @@
         <h1>🦠 CDC Wastewater Surveillance Dashboard</h1>
         
         <div class="controls">
-            <select id="stateSelect">
-                <option value="">Select State/Territory...</option>
-            </select>
+            <div>
+                <select id="stateSelect" multiple>
+                    <option value="">Select Location(s)...</option>
+                </select>
+                <br>
+                <em><small>(Hold Ctrl/Cmd to select up to 3)</small></em>
+            </div>
             <select id="periodSelect">
                 <option value="all">All Results</option>
                 <option value="365">1 Year</option>
@@ -114,6 +118,8 @@
             'Low': '#b3d9ff',
             'Very Low': '#e6f3ff'
         };
+
+        const COMPARISON_COLORS = ['#1f77b4', '#ff7f0e', '#2ca02c'];
 
         const REGIONS = {
             "Northeast": ["Connecticut", "Maine", "Massachusetts", "New Hampshire", "Rhode Island", "Vermont", "New Jersey", "New York", "Pennsylvania"],
@@ -201,17 +207,25 @@
 
             select.innerHTML = options;
 
-            const savedState = localStorage.getItem('selectedState');
-            if (savedState) {
-                // Check if the saved value is a valid option
-                if (Array.from(select.options).some(opt => opt.value === savedState)) {
-                    select.value = savedState;
+            const savedStatesJSON = localStorage.getItem('selectedStates');
+            if (savedStatesJSON) {
+                try {
+                    const savedStates = JSON.parse(savedStatesJSON);
+                    if (Array.isArray(savedStates)) {
+                        Array.from(select.options).forEach(option => {
+                            if (savedStates.includes(option.value)) {
+                                option.selected = true;
+                            }
+                        });
+                    }
+                } catch (e) {
+                    console.error("Could not parse saved states from localStorage", e);
+                    localStorage.removeItem('selectedStates');
                 }
             }
         }
 
-        function filterData() {
-            const selectedLocation = document.getElementById('stateSelect').value;
+        function filterData(selectedLocation) {
             const period = document.getElementById('periodSelect').value;
             
             if (!selectedLocation || allData.length === 0) return [];
@@ -300,22 +314,33 @@
             document.getElementById('stats').style.display = 'grid';
         }
 
-        function updateTimeSeriesChart(data) {
+        function updateTimeSeriesChart(datasets) {
             const ctx = document.getElementById('timeSeriesChart').getContext('2d');
             
             if (timeSeriesChart) timeSeriesChart.destroy();
-            
+
+            // Unify date labels across all datasets for proper alignment
+            const allDates = [...new Set(datasets.flatMap(ds => ds.data.map(d => d.date.getTime())))];
+            allDates.sort((a, b) => a - b);
+            const labels = allDates.map(ts => new Date(ts).toLocaleDateString());
+
+            const chartDatasets = datasets.map((ds, i) => {
+                const dataMap = new Map(ds.data.map(d => [d.date.toLocaleDateString(), d.wval]));
+                return {
+                    label: ds.label,
+                    data: labels.map(label => dataMap.get(label) ?? null), // Use null for missing data points
+                    borderColor: COMPARISON_COLORS[i % COMPARISON_COLORS.length],
+                    backgroundColor: COMPARISON_COLORS[i % COMPARISON_COLORS.length] + '1a', // Add alpha for area fill
+                    tension: 0.1,
+                    spanGaps: true, // Connect lines over null data points
+                };
+            });
+
             timeSeriesChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: data.map(d => d.date.toLocaleDateString()),
-                    datasets: [{
-                        label: 'WVAL',
-                        data: data.map(d => d.wval),
-                        borderColor: '#007cba',
-                        backgroundColor: 'rgba(0, 124, 186, 0.1)',
-                        tension: 0.1
-                    }]
+                    labels: labels,
+                    datasets: chartDatasets
                 },
                 options: {
                     responsive: true,
@@ -323,6 +348,11 @@
                     scales: {
                         y: { beginAtZero: true, title: { display: true, text: 'WVAL' } },
                         x: { title: { display: true, text: 'Date' } }
+                    },
+                    plugins: {
+                        legend: {
+                            display: datasets.length > 1 // Only show legend in comparison mode
+                        }
                     }
                 }
             });
@@ -361,17 +391,15 @@
             });
         }
 
-        function updateTable(data) {
+        function updateTable(data, locationName) {
             const tbody = document.getElementById('tableBody');
-            const selectedLocation = document.getElementById('stateSelect').value;
             tbody.innerHTML = '';
             
             data.forEach(d => {
                 const row = tbody.insertRow();
-                const locationCell = d.state_abbr ? d.state_abbr : d.name;
                 row.innerHTML = `
                     <td>${d.date.toLocaleDateString()}</td>
-                    <td>${locationCell}</td>
+                    <td>${locationName}</td>
                     <td>${d.wval.toFixed(2)}</td>
                     <td class="activity-${d.activityLevel.toLowerCase().replace(' ', '-')}">${d.activityLevel}</td>
                 `;
@@ -379,15 +407,58 @@
         }
 
         function updateVisualization() {
-            const selectedLocation = document.getElementById('stateSelect').value;
-            if (selectedLocation) {
-                localStorage.setItem('selectedState', selectedLocation);
+            const select = document.getElementById('stateSelect');
+            let selectedLocations = Array.from(select.options)
+                .filter(option => option.selected && option.value)
+                .map(option => option.value);
+
+            if (selectedLocations.length > 3) {
+                console.warn("You can select a maximum of 3 locations. Displaying the first 3.");
+                selectedLocations = selectedLocations.slice(0, 3);
+                // Visually update the selection to match the data being shown
+                Array.from(select.options).forEach(opt => {
+                    opt.selected = selectedLocations.includes(opt.value);
+                });
             }
-            const data = filterData();
-            updateStats(data);
-            updateTimeSeriesChart(data);
-            updatePieChart(data);
-            updateTable(data);
+
+            localStorage.setItem('selectedStates', JSON.stringify(selectedLocations));
+
+            const statsEl = document.getElementById('stats');
+            const pieEl = document.querySelector('.pie-container');
+            const tableEl = document.querySelector('.data-table');
+
+            if (selectedLocations.length === 0) {
+                if (timeSeriesChart) timeSeriesChart.destroy();
+                statsEl.style.display = 'none';
+                pieEl.style.display = 'none';
+                tableEl.style.display = 'none';
+                return;
+            }
+
+            const datasets = selectedLocations.map(location => ({
+                label: location,
+                data: filterData(location)
+            }));
+
+            if (selectedLocations.length > 1) {
+                // Comparison View
+                statsEl.style.display = 'none';
+                pieEl.style.display = 'none';
+                tableEl.style.display = 'none';
+                updateTimeSeriesChart(datasets);
+            } else {
+                // Single Location View
+                statsEl.style.display = 'grid';
+                pieEl.style.display = 'block';
+                // Make sure the entire table container is visible
+                tableEl.style.display = 'block';
+
+                const singleDataset = datasets[0].data;
+                updateStats(singleDataset);
+                updateTimeSeriesChart(datasets);
+                updatePieChart(singleDataset);
+                updateTable(singleDataset, selectedLocations[0]);
+            }
         }
 
         function toggleTable() {
