@@ -30,6 +30,13 @@
         .loading { text-align: center; padding: 20px; color: #666; }
         .error { color: #d32f2f; background: #ffebee; padding: 10px; border-radius: 4px; margin: 10px 0; }
 
+        .status-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; font-size: 12px; padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px; background: #f8fafc; color: #374151; }
+        .status-pill { padding: 2px 8px; border-radius: 9999px; font-weight: 600; }
+        .status-ok { background: #dcfce7; color: #166534; }
+        .status-warn { background: #fef9c3; color: #854d0e; }
+        .status-fail { background: #fee2e2; color: #991b1b; }
+        .status-sep { color: #9ca3af; }
+
         .dashboard-layout {
             display: flex;
             gap: 20px;
@@ -69,6 +76,15 @@
             margin-bottom: 5px;
             font-family: monospace;
         }
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #555;
+        }
+        .footer a {
+            color: #007cba;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -96,6 +112,16 @@
                         <option value="45">45 Days</option>
                     </select>
                     <button onclick="refreshData()">🔄 Refresh Data</button>
+                </div>
+
+                <div id="dataStatus" class="status-bar" style="display: none;">
+                    <span id="statusConnection" class="status-pill"></span>
+                    <span class="status-sep">•</span>
+                    <span id="statusProxy"></span>
+                    <span class="status-sep">•</span>
+                    <span id="statusLatest"></span>
+                    <span class="status-sep">•</span>
+                    <span id="statusNewness"></span>
                 </div>
 
                 <div id="loading" class="loading" style="display: none;">Loading data...</div>
@@ -147,6 +173,9 @@
             </div>
         </div>
         <div id="region-definitions"></div>
+        <div class="footer">
+            Data source: <a href="https://www.cdc.gov/wcms/vizdata/NCEZID_DIDRI/SC2/nwsssc2stateactivitylevelDL.csv" target="_blank" rel="noopener noreferrer">CDC NWSS state activity levels (CSV)</a>
+        </div>
     </div>
 
     <script>
@@ -203,6 +232,69 @@
             return data;
         }
 
+        function getLatestDate(rows) {
+            if (!rows || rows.length === 0) return null;
+            const cols = Object.keys(rows[0]);
+            const dateCol = cols.find(k => k.toLowerCase().includes('date'));
+            if (!dateCol) return null;
+            let maxTs = -Infinity;
+            for (const r of rows) {
+                const d = new Date(r[dateCol]);
+                const ts = d.getTime();
+                if (!isNaN(ts) && ts > maxTs) maxTs = ts;
+            }
+            if (!isFinite(maxTs)) return null;
+            return new Date(maxTs);
+        }
+
+        function fmtDate(d) {
+            if (!d) return '-';
+            return d.toLocaleDateString();
+        }
+
+        function daysSince(d) {
+            if (!d) return null;
+            const ms = Date.now() - d.getTime();
+            return Math.floor(ms / (1000 * 60 * 60 * 24));
+        }
+
+        function updateStatusBar(status) {
+            const bar = document.getElementById('dataStatus');
+            const conn = document.getElementById('statusConnection');
+            const proxy = document.getElementById('statusProxy');
+            const latest = document.getElementById('statusLatest');
+            const newness = document.getElementById('statusNewness');
+
+            if (!bar || !conn || !proxy || !latest || !newness) return;
+
+            bar.style.display = 'flex';
+
+            conn.textContent = status.success ? 'Data fetch: OK' : 'Data fetch: Failed';
+            conn.className = 'status-pill ' + (status.success ? 'status-ok' : 'status-fail');
+
+            if (typeof status.proxyIndex === 'number') {
+                const label = status.proxyIndex === 0 ? 'Direct' : `Proxy ${status.proxyIndex}`;
+                proxy.textContent = `Source: ${label}`;
+            } else {
+                proxy.textContent = 'Source: -';
+            }
+
+            if (status.latestDate) {
+                const age = daysSince(status.latestDate);
+                latest.textContent = `Latest date: ${fmtDate(status.latestDate)} (${age !== null ? age + 'd ago' : '-'})`;
+            } else {
+                latest.textContent = 'Latest date: -';
+            }
+
+            if (status.success) {
+                newness.textContent = status.isNew ? 'New data detected' : 'No new data';
+                newness.className = status.isNew ? 'status-pill status-ok' : 'status-pill status-warn';
+            } else {
+                newness.textContent = status.errorMessage || 'Error';
+                newness.className = 'status-pill status-fail';
+            }
+        }
+
         async function fetchData() {
             document.getElementById('loading').style.display = 'block';
             document.getElementById('error').style.display = 'none';
@@ -219,6 +311,13 @@
                     populateStates();
                     updateVisualization();
                     document.getElementById('loading').style.display = 'none';
+
+                    const latest = getLatestDate(allData);
+                    const latestStr = latest ? latest.toISOString().split('T')[0] : '';
+                    const prev = localStorage.getItem('prevLatestDate') || '';
+                    const isNew = latestStr && latestStr !== prev;
+                    if (latestStr) localStorage.setItem('prevLatestDate', latestStr);
+                    updateStatusBar({ success: true, proxyIndex: i, latestDate: latest, isNew });
                     return;
                     
                 } catch (error) {
@@ -226,6 +325,7 @@
                     if (i === PROXIES.length - 1) {
                         document.getElementById('error').textContent = 'Unable to fetch data. CORS blocked. Please run a local server or use browser extension to disable CORS.';
                         document.getElementById('error').style.display = 'block';
+                        updateStatusBar({ success: false, proxyIndex: null, latestDate: null, isNew: false, errorMessage: 'CORS blocked' });
                     }
                 }
             }
